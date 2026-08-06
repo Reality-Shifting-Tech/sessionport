@@ -25,7 +25,18 @@ ACCENT = (6, 182, 212)  # RST signal cyan
 ACID = (231, 255, 2)  # RST acid yellow
 GREEN = (63, 185, 80)
 
-AGENTS = ["claude-code", "codex", "opencode", "gemini", "hermes"]
+AGENTS = [
+    "claude-code",
+    "codex",
+    "opencode",
+    "gemini",
+    "hermes",
+    "cursor",
+    "aider",
+    "windsurf",
+    "openclaw",
+    "cline",
+]
 FONT_CANDIDATES = [
     "/System/Library/Fonts/Menlo.ttc",
     "/System/Library/Fonts/Supplemental/Menlo.ttc",
@@ -92,8 +103,8 @@ def draw_text_center(d: ImageDraw.ImageDraw, cx: int, cy: int, text: str, font, 
 
 
 def make_architecture() -> str:
-    """Dark diagram: agents -> sessionport export -> brief -> sessionport import -> agents."""
-    W, H = 1600, 900
+    """Dark diagram: agents -> sess export -> brief -> sess import -> agents."""
+    W, H = 1600, 1060
     canvas = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(canvas)
     bold = load_font(30)
@@ -105,24 +116,31 @@ def make_architecture() -> str:
 
     logo_size = 72
     gap = 40
-    start_x = 110
-    y_logo = 210
-    d.text((start_x, y_logo - 40), "sources", font=small, fill=DIM)
-    for i, name in enumerate(AGENTS):
-        x = start_x + i * (logo_size + gap)
-        canvas.paste(agent_logo(name, logo_size), (x, y_logo), agent_logo(name, logo_size))
-        d.text((x, y_logo + logo_size + 10), name, font=tiny, fill=DIM)
+    start_x = 90
 
-    # relay export box
-    bw, bh = 320, 130
-    box1 = (680, 160, 680 + bw, 160 + bh)
+    def draw_agents(d, y: int, label: str) -> None:
+        d.text((start_x, y - 40), label, font=small, fill=DIM)
+        for i, name in enumerate(AGENTS[:5]):
+            x = start_x + i * (logo_size + gap)
+            canvas.paste(agent_logo(name, logo_size), (x, y), agent_logo(name, logo_size))
+            d.text((x, y + logo_size + 8), name, font=tiny, fill=DIM)
+        for i, name in enumerate(AGENTS[5:]):
+            x = start_x + i * (logo_size + gap)
+            canvas.paste(agent_logo(name, logo_size), (x, y + 128), agent_logo(name, logo_size))
+            d.text((x, y + 128 + logo_size + 8), name, font=tiny, fill=DIM)
+
+    draw_agents(d, 190, "sources")
+
+    # export box
+    bw, bh = 320, 140
+    box1 = (700, 170, 700 + bw, 170 + bh)
     rounded_box(d, box1, 16)
     draw_text_center(d, box1[0] + bw // 2, box1[1] + 45, "sessionport export", bold, TEXT)
-    draw_text_center(d, box1[0] + bw // 2, box1[1] + 82, "extract durable state", small, DIM)
-    draw_text_center(d, box1[0] + bw // 2, box1[1] + 106, "offline · deterministic", small, GREEN)
+    draw_text_center(d, box1[0] + bw // 2, box1[1] + 85, "extract durable state", small, DIM)
+    draw_text_center(d, box1[0] + bw // 2, box1[1] + 108, "offline · deterministic", small, GREEN)
 
     # brief box
-    box2 = (1120, 160, 1120 + bw, 160 + bh)
+    box2 = (1120, 170, 1120 + bw, 170 + bh)
     rounded_box(d, box2, 16)
     draw_text_center(d, box2[0] + bw // 2, box2[1] + 40, "brief.md", bold, ACID)
     draw_text_center(d, box2[0] + bw // 2, box2[1] + 76, "sessionport-brief/v1", small, DIM)
@@ -131,36 +149,33 @@ def make_architecture() -> str:
     arrow(
         d,
         start_x + 5 * (logo_size + gap) - gap + 20,
-        y_logo + logo_size // 2,
+        190 + 128 + logo_size // 2,
         box1[0],
         box1[1] + 60,
     )
-    arrow(d, box1[0] + bw, box1[1] + 65, box2[0], box2[1] + 65)
+    arrow(d, box1[0] + bw, box1[1] + 70, box2[0], box2[1] + 70)
 
     # import row
-    y2 = 520
-    box3 = (680, y2, 680 + bw, y2 + bh)
+    y2 = 560
+    box3 = (700, y2, 700 + bw, y2 + bh)
     rounded_box(d, box3, 16)
     draw_text_center(d, box3[0] + bw // 2, box3[1] + 45, "sessionport import", bold, TEXT)
-    draw_text_center(d, box3[0] + bw // 2, box3[1] + 82, "resume prompt", small, DIM)
-    draw_text_center(d, box3[0] + bw // 2, box3[1] + 106, "any target agent", small, GREEN)
+    draw_text_center(d, box3[0] + bw // 2, box3[1] + 85, "resume prompt", small, DIM)
+    draw_text_center(d, box3[0] + bw // 2, box3[1] + 108, "any target agent", small, GREEN)
 
-    d.text((start_x, y2 - 40), "targets", font=small, fill=DIM)
-    for i, name in enumerate(AGENTS):
-        x = start_x + i * (logo_size + gap)
-        canvas.paste(agent_logo(name, logo_size), (x, y2), agent_logo(name, logo_size))
+    draw_agents(d, 580, "targets")
 
     arrow(d, box2[0] + 40, box2[1] + bh - 10, box3[0] + 60, box3[1])
     arrow(
         d,
         box3[0] + bw,
-        box3[1] + 65,
+        box3[1] + 70,
         start_x + 5 * (logo_size + gap) - gap + 20,
-        y2 + logo_size // 2,
+        580 + 128 + logo_size // 2,
     )
 
     # fidelity scorer (optional)
-    box4 = (160, 560, 160 + 440, 560 + 100)
+    box4 = (1120, 560, 1120 + 440, 560 + 100)
     rounded_box(d, box4, 14)
     draw_text_center(d, box4[0] + 220, box4[1] + 35, "sessionport score (optional)", bold, TEXT)
     draw_text_center(
@@ -169,7 +184,7 @@ def make_architecture() -> str:
     arrow(d, box2[0] + 80, box2[1] + bh - 10, box4[0] + 220, box4[1])
 
     d.text(
-        (60, 820),
+        (60, 1000),
         "Default path is fully offline. The judge runs only when you call "
         "sessionport score with a key.",
         font=small,

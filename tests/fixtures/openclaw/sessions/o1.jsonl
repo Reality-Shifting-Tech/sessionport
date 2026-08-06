@@ -1,0 +1,2 @@
+{"type":"user","content":"Plan the migration"}
+{"type":"assistant","content":"Decision: phased rollout. Files: migrate.py."}

@@ -1,0 +1,2 @@
+{"type":"user","content":"Build the CLI"}
+{"type":"assistant","content":"Decision: use typer for argument parsing."}

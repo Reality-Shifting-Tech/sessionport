@@ -120,12 +120,79 @@ def test_score_with_fake_judge(
     brief_file = tmp_path / "brief.md"
     brief_file.write_text(render(brief), encoding="utf-8")
 
-    def fake_score(transcript: str, brief_text: str) -> Score:
+    def fake_score(
+        transcript: str,
+        brief_text: str,
+        endpoint: str | None = None,
+        model: str | None = None,
+    ) -> Score:
         assert "auth bug" in transcript
+        assert endpoint == "https://judge.example/v1"
+        assert model == "judge-lite"
         return Score(fidelity=0.88, missed=["one fact"], notes="ok")
 
     monkeypatch.setattr("sessionport.cli.score_brief", fake_score)
-    assert _run(["score", str(brief_file), "--source", "claude-code:9f9f9f9f", "--json"]) == 0
+    assert (
+        _run(
+            [
+                "score",
+                str(brief_file),
+                "--source",
+                "claude-code:9f9f9f9f",
+                "--endpoint",
+                "https://judge.example/v1",
+                "--model",
+                "judge-lite",
+                "--json",
+            ]
+        )
+        == 0
+    )
     payload = json.loads(capsys.readouterr().out)
     assert payload["fidelity"] == 0.88
     assert payload["missed"] == ["one fact"]
+
+
+def test_export_all(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _env_homes(monkeypatch)
+    out_dir = tmp_path / "briefs"
+    assert _run(["export", "--all", "--out-dir", str(out_dir)]) == 0
+    files = sorted(p.name for p in out_dir.iterdir())
+    assert any("claude-code" in name for name in files)
+    assert any("codex" in name for name in files)
+    assert "exported" in capsys.readouterr().out
+
+
+def test_export_all_requires_target(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _env_homes(monkeypatch)
+    assert _run(["export"]) == 1
+    assert "error" in capsys.readouterr().err
+
+
+def test_copy_text_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
+    import sessionport.cli as cli
+
+    calls: list[list[str]] = []
+
+    def fake_run(cmd, input=b"", check=True) -> None:  # noqa: ANN001
+        calls.append(list(cmd))
+
+    monkeypatch.setattr(cli.shutil, "which", lambda name: "clip" if name == "clip" else None)
+    monkeypatch.setattr(cli.subprocess, "run", fake_run)
+    assert cli._copy_text("hello")
+    assert calls == [["clip"]]
+
+
+def test_mcp_command_without_dep(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    import importlib.util
+
+    if importlib.util.find_spec("mcp") is not None:
+        pytest.skip("mcp installed; would start the stdio server")
+    assert _run(["mcp"]) == 1
+    assert "sessionport[mcp]" in capsys.readouterr().err

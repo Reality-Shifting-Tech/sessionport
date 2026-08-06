@@ -23,7 +23,7 @@
 
 ## Why
 
-You work in Claude Code today and OpenCode tomorrow. Codex for the weekend, Gemini for the big refactor. Every agent has its own session store, its own format, and zero memory of the others. Switch agents and your context dies: the decisions, the constraints, the files you already read, the next steps you agreed on.
+You work in Claude Code today and OpenCode tomorrow. Codex for the weekend, Cursor for the one-off fix. Every agent has its own session store, its own format, and zero memory of the others. Switch agents and your context dies: the decisions, the constraints, the files you already read, the next steps you agreed on.
 
 sessionport is the missing layer. It reads any agent's local session store, distills the durable parts into one markdown brief, and hands that brief to any other agent as a resume prompt.
 
@@ -40,20 +40,29 @@ sessionport is the missing layer. It reads any agent's local session store, dist
 | <img src="docs/images/agents/opencode.png" width="24"> | **OpenCode** | JSON session files |
 | <img src="docs/images/agents/gemini.png" width="24"> | **Gemini CLI** | Markdown transcripts |
 | <img src="docs/images/agents/hermes.png" width="24"> | **Hermes** | SQLite session databases |
+| <img src="docs/images/agents/cursor.png" width="24"> | **Cursor** | JSONL agent sessions (`~/.cursor/agent`) |
+| <img src="docs/images/agents/aider.png" width="24"> | **Aider** | Markdown history (`~/.aider.chat/history`) |
+| <img src="docs/images/agents/windsurf.png" width="24"> | **Windsurf** | JSONL sessions (`~/.windsurf`) |
+| <img src="docs/images/agents/openclaw.png" width="24"> | **OpenClaw** | JSONL sessions (`~/.openclaw`) |
+| <img src="docs/images/agents/cline.png" width="24"> | **Cline** | JSONL tasks (`~/.config/cline/tasks`) |
 
-Every store location can be overridden with a `SESSIONPORT_*` environment variable
-for CI and unusual setups (`SESSIONPORT_CLAUDE_HOME`, `SESSIONPORT_CODEX_HOME`,
-`SESSIONPORT_GEMINI_HOME`, `SESSIONPORT_OPENCODE_HOME`, `SESSIONPORT_HERMES_DB`).
+Every store location can be overridden with a `SESSIONPORT_*` environment
+variable for CI and unusual setups (`SESSIONPORT_CLAUDE_HOME`,
+`SESSIONPORT_CODEX_HOME`, `SESSIONPORT_GEMINI_HOME`, `SESSIONPORT_OPENCODE_HOME`,
+`SESSIONPORT_HERMES_DB`, `SESSIONPORT_CURSOR_HOME`, `SESSIONPORT_AIDER_HOME`,
+`SESSIONPORT_WINDSURF_HOME`, `SESSIONPORT_OPENCLAW_HOME`, `SESSIONPORT_CLINE_HOME`).
 
 ## Install
 
 ```bash
 pip install sessionport
+# MCP server support:
+pip install 'sessionport[mcp]'
 # or
 uv tool install sessionport
 ```
 
-Requires Python >= 3.11. macOS and Linux.
+Requires Python >= 3.11. macOS, Linux, and Windows.
 
 ## Quickstart
 
@@ -64,11 +73,17 @@ sessionport list
 # turn a session into a portable brief
 sessionport export claude-code:9f9f9f9f
 
+# export every session you have
+sessionport export --all --out-dir briefs/
+
 # hand the brief to another agent as a resume prompt
 sessionport import brief-claude-code-9f9f9f9f.md --into codex --copy
 
 # did the brief lose anything? (optional, needs an LLM key)
 sessionport score brief-claude-code-9f9f9f9f.md --source claude-code:9f9f9f9f
+
+# same loop over MCP for any agent client (needs sessionport[mcp])
+sessionport mcp
 ```
 
 That's the whole loop: export, carry, import, resume.
@@ -134,30 +149,47 @@ brief against its source transcript with an LLM judge and reports:
 - **missed**: the specific facts the brief lost
 - **notes**: one-sentence verdict
 
-Opt-in and env-gated, against any OpenAI-compatible endpoint:
+Opt-in and env-gated, against any OpenAI-compatible endpoint (Ollama works
+too: point `SESSIONPORT_JUDGE_ENDPOINT` at `http://localhost:11434/v1`):
 
 ```bash
 export SESSIONPORT_JUDGE_API_KEY=sk-...
 export SESSIONPORT_JUDGE_ENDPOINT=https://api.openai.com/v1/chat/completions  # default
 export SESSIONPORT_JUDGE_MODEL=gpt-4o-mini                                     # default
 sessionport score brief.md --source claude-code:9f9f9f9f
+
+# or override per call:
+sessionport score brief.md --source claude-code:9f9f9f9f --endpoint http://localhost:11434/v1 --model llama3
 ```
 
 The judge never runs on the export path, and transcripts are truncated to
 120k characters.
 
+## MCP server
+
+`sessionport mcp` exposes the same loop over MCP stdio for any MCP client
+(Claude Desktop, Cursor, OpenCode, your own harness):
+
+- `list_sessions(agent)` — discover sessions
+- `export_brief(session)` — render a portable brief
+- `import_prompt(brief_file, into)` — build a resume prompt
+
+Install with `pip install 'sessionport[mcp]'`.
+
 ## CLI reference
 
 ```
 sessionport list [--agent NAME] [--json]
-sessionport export SESSION [--out FILE] [--json]
+sessionport export [SESSION] [--all] [--agent NAME] [--out FILE] [--out-dir DIR] [--json]
 sessionport import FILE [--into AGENT] [--copy] [--out FILE]
-sessionport score FILE --source AGENT:SESSION [--json]
+sessionport score FILE --source AGENT:SESSION [--endpoint URL] [--model NAME] [--json]
+sessionport mcp
 sessionport version
 ```
 
 `SESSION` is `agent:id` (e.g. `claude-code:9f9f9f9f`), or a bare id that is
-searched across all stores.
+searched across all stores. `--all` exports every discovered session into
+`--out-dir` (default `briefs/`).
 
 ## Development
 
@@ -167,16 +199,16 @@ make all          # lint + typecheck + test (the full gate)
 make images       # regenerate docs/images
 ```
 
-30 tests, zero-warning lint, strict mypy. See [AGENTS.md](AGENTS.md) for the
+42 tests, zero-warning lint, strict mypy. See [AGENTS.md](AGENTS.md) for the
 operational reference and [CONTRIBUTING.md](CONTRIBUTING.md) for the
 contribution contract.
 
 ## Roadmap
 
-- MCP server (v0.2): the same library behind an agent-native surface
-- More adapters: Cursor, Aider, Warp, Windsurf
-- Local judge via Ollama for fully offline scoring
-- Windows parity
+- More adapters (Warp, Copilot CLI, Mistral Vibe) and a community adapter SDK
+- Local judge via Ollama one-liner (`sessionport score --endpoint http://localhost:11434/v1`)
+- Homebrew formula
+- Brief diff tool (`sessionport diff old.md new.md`)
 
 ## License
 

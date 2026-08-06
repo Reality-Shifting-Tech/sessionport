@@ -1,6 +1,6 @@
 # ADR-0004: CLI and library first, no MCP server in v0.1
 
-- Status: Accepted
+- Status: Superseded by ADR-0005
 - Date: 2026-08-05
 
 ## Context

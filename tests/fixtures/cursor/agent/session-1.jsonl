@@ -1,0 +1,2 @@
+{"role":"user","content":[{"type":"text","text":"Refactor the checkout flow"}]}
+{"role":"assistant","content":[{"type":"text","text":"Decision: extract a CartService. Files: cart.py, checkout.py."}]}

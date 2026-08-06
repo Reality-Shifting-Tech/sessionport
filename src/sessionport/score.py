@@ -84,13 +84,13 @@ def parse_judge_output(raw: str) -> Score:
     return Score(fidelity=clamped, missed=[str(x) for x in missed], notes=str(notes or ""))
 
 
-def http_judge() -> Judge:
+def http_judge(endpoint: str | None = None, model: str | None = None) -> Judge:
     """Build the default judge: an OpenAI-compatible chat completion call."""
-    endpoint = os.environ.get(
+    endpoint = endpoint or os.environ.get(
         "SESSIONPORT_JUDGE_ENDPOINT", "https://api.openai.com/v1/chat/completions"
     )
     api_key = os.environ.get("SESSIONPORT_JUDGE_API_KEY", "")
-    model = os.environ.get("SESSIONPORT_JUDGE_MODEL", "gpt-4o-mini")
+    model = model or os.environ.get("SESSIONPORT_JUDGE_MODEL", "gpt-4o-mini")
     if not api_key:
         hint = (
             "SESSIONPORT_JUDGE_API_KEY is not set; set it (plus "
@@ -122,8 +122,14 @@ def http_judge() -> Judge:
     return judge
 
 
-def score_brief(transcript: str, brief_text: str, judge: Judge | None = None) -> Score:
+def score_brief(
+    transcript: str,
+    brief_text: str,
+    judge: Judge | None = None,
+    endpoint: str | None = None,
+    model: str | None = None,
+) -> Score:
     """Score a brief against its source transcript using a judge."""
-    judge_fn = judge or http_judge()
+    judge_fn = judge or http_judge(endpoint=endpoint, model=model)
     prompt = build_prompt(transcript, brief_text)
     return parse_judge_output(judge_fn(prompt))

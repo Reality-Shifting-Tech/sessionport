@@ -26,7 +26,7 @@ from sessionport.models import Message, SessionRef
 
 StoreError = RuntimeError
 
-_JSONL_ROLE_KEYS = ("role", "role_name", "actor")
+_JSONL_ROLE_KEYS = ("role", "role_name", "actor", "type")
 _JSONL_TEXT_BLOCK_TYPES = (
     "text",
     "input_text",
@@ -135,54 +135,55 @@ class SessionStore(Protocol):
     def load_transcript(self, session_id: str) -> list[Message]: ...
 
 
-def _sessions_from_jsonl(agent: str, home: Path) -> list[SessionRef]:
-    refs: list[SessionRef] = []
-    if not home.is_dir():
-        return refs
-    for path in sorted(home.glob("*.jsonl")):
-        lines = 0
-        first_text = ""
-        with path.open("r", encoding="utf-8", errors="replace") as handle:
-            for line in handle:
-                if not line.strip():
-                    continue
-                lines += 1
-                if not first_text:
-                    try:
-                        obj = json.loads(line)
-                        if isinstance(obj, dict):
-                            first_text = _jsonl_line_text(obj).strip()
-                    except json.JSONDecodeError:
-                        continue
-        refs.append(
-            SessionRef(
-                agent=agent,
-                session_id=path.stem,
-                title=first_text[:120] or path.stem,
-                path=str(path),
-                message_count=lines,
-            )
-        )
-    return refs
-
-
 class JsonlStore:
     """Generic adapter for agents that store one JSONL file per session."""
 
     name: str
 
-    def __init__(self, name: str, home: Path) -> None:
+    def __init__(self, name: str, home: Path, recursive: bool = False) -> None:
         self.name = name
         self._home = home
+        self._recursive = recursive
 
     def list_sessions(self) -> list[SessionRef]:
-        return _sessions_from_jsonl(self.name, self._home)
+        pattern = "**/*.jsonl" if self._recursive else "*.jsonl"
+        refs: list[SessionRef] = []
+        if not self._home.is_dir():
+            return refs
+        for path in sorted(self._home.glob(pattern)):
+            lines = 0
+            first_text = ""
+            with path.open("r", encoding="utf-8", errors="replace") as handle:
+                for line in handle:
+                    if not line.strip():
+                        continue
+                    lines += 1
+                    if not first_text:
+                        try:
+                            obj = json.loads(line)
+                            if isinstance(obj, dict):
+                                first_text = _jsonl_line_text(obj).strip()
+                        except json.JSONDecodeError:
+                            continue
+            if lines == 0:
+                continue
+            refs.append(
+                SessionRef(
+                    agent=self.name,
+                    session_id=path.stem,
+                    title=first_text[:120] or path.stem,
+                    path=str(path),
+                    message_count=lines,
+                )
+            )
+        return refs
 
     def load_transcript(self, session_id: str) -> list[Message]:
-        path = self._home / f"{session_id}.jsonl"
-        if not path.is_file():
-            raise StoreError(f"{self.name}: no session {session_id!r} at {path}")
-        return read_jsonl_messages(path)
+        pattern = "**/*.jsonl" if self._recursive else "*.jsonl"
+        for path in self._home.glob(pattern):
+            if path.stem == session_id:
+                return read_jsonl_messages(path)
+        raise StoreError(f"{self.name}: no session {session_id!r} under {self._home}")
 
 
 class ClaudeCodeStore(JsonlStore):
@@ -195,6 +196,143 @@ class CodexStore(JsonlStore):
     def __init__(self) -> None:
         home = Path(os.environ.get("SESSIONPORT_CODEX_HOME", Path.home() / ".codex" / "sessions"))
         super().__init__("codex", home)
+
+
+class CursorStore(JsonlStore):
+    """Cursor agent sessions (JSONL under ~/.cursor/agent)."""
+
+    def __init__(self) -> None:
+        override = os.environ.get("SESSIONPORT_CURSOR_HOME")
+        if override:
+            home = Path(override)
+        else:
+            candidates = [Path.home() / ".cursor" / "agent", Path.home() / ".cursor"]
+            home = next((p for p in candidates if p.is_dir()), candidates[0])
+        super().__init__("cursor", home, recursive=True)
+
+
+class WindsurfStore(JsonlStore):
+    """Windsurf editor agent sessions (JSONL under the Windsurf data dir)."""
+
+    def __init__(self) -> None:
+        override = os.environ.get("SESSIONPORT_WINDSURF_HOME")
+        if override:
+            home = Path(override)
+        else:
+            candidates = [
+                Path.home() / ".windsurf" / "sessions",
+                Path.home() / ".codeium" / "windsurf" / "sessions",
+                Path.home() / ".windsurf",
+            ]
+            home = next((p for p in candidates if p.is_dir()), candidates[0])
+        super().__init__("windsurf", home, recursive=True)
+
+
+class OpenClawStore(JsonlStore):
+    """OpenClaw agent sessions (JSONL under ~/.openclaw)."""
+
+    def __init__(self) -> None:
+        override = os.environ.get("SESSIONPORT_OPENCLAW_HOME")
+        if override:
+            home = Path(override)
+        else:
+            candidates = [
+                Path.home() / ".openclaw" / "sessions",
+                Path.home() / ".openclaw",
+            ]
+            home = next((p for p in candidates if p.is_dir()), candidates[0])
+        super().__init__("openclaw", home, recursive=True)
+
+
+class ClineStore(JsonlStore):
+    """Cline task history (JSONL under the Cline tasks dir)."""
+
+    def __init__(self) -> None:
+        override = os.environ.get("SESSIONPORT_CLINE_HOME")
+        if override:
+            home = Path(override)
+        else:
+            candidates = [
+                Path.home() / ".config" / "cline" / "tasks",
+                Path.home() / "Library" / "Application Support" / "Cline" / "tasks",
+                Path.home() / ".config" / "cline",
+            ]
+            home = next((p for p in candidates if p.is_dir()), candidates[0])
+        super().__init__("cline", home, recursive=True)
+
+
+class AiderStore:
+    """Aider session history (markdown files under ~/.aider.chat/history).
+
+    Aider writes one markdown file per repo session: lines starting with
+    ``####`` are user prompts, everything else in the block is the response.
+    """
+
+    name = "aider"
+
+    def __init__(self) -> None:
+        override = os.environ.get("SESSIONPORT_AIDER_HOME")
+        self._home = Path(override or Path.home() / ".aider.chat" / "history")
+
+    def list_sessions(self) -> list[SessionRef]:
+        refs: list[SessionRef] = []
+        if not self._home.is_dir():
+            return refs
+        for path in sorted(self._home.rglob("*.md")):
+            messages = self._parse_file(path)
+            if not messages:
+                continue
+            refs.append(
+                SessionRef(
+                    agent=self.name,
+                    session_id=path.stem,
+                    title=first_user_text(messages)[:120],
+                    path=str(path),
+                    message_count=len(messages),
+                )
+            )
+        return refs
+
+    def load_transcript(self, session_id: str) -> list[Message]:
+        for path in self._home.rglob("*.md"):
+            if path.stem == session_id:
+                messages = self._parse_file(path)
+                if messages:
+                    return messages
+        raise StoreError(f"aider: no session {session_id!r} under {self._home}")
+
+    def _parse_file(self, path: Path) -> list[Message]:
+        messages: list[Message] = []
+        role: str | None = None
+        buffer: list[str] = []
+
+        def flush() -> None:
+            nonlocal role, buffer
+            text = "\n".join(buffer).strip()
+            if text and role:
+                messages.append(Message(role=role, text=text))
+            role = None
+            buffer = []
+
+        with path.open("r", encoding="utf-8", errors="replace") as handle:
+            for raw in handle:
+                line = raw.rstrip("\n")
+                if line.startswith("#### "):
+                    flush()
+                    role = "user"
+                    buffer.append(line[5:])
+                elif line.strip():
+                    if role == "user":
+                        flush()
+                        role = "assistant"
+                        buffer.append(line)
+                    elif role is None:
+                        role = "assistant"
+                        buffer.append(line)
+                    else:
+                        buffer.append(line)
+        flush()
+        return messages
 
 
 class GeminiStore:
@@ -452,6 +590,11 @@ def stores() -> dict[str, SessionStore]:
     return {
         "claude-code": ClaudeCodeStore(),
         "codex": CodexStore(),
+        "cursor": CursorStore(),
+        "aider": AiderStore(),
+        "windsurf": WindsurfStore(),
+        "openclaw": OpenClawStore(),
+        "cline": ClineStore(),
         "gemini": GeminiStore(),
         "opencode": OpenCodeStore(),
         "hermes": HermesStore(),
