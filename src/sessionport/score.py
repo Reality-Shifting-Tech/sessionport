@@ -92,7 +92,10 @@ def http_judge() -> Judge:
     api_key = os.environ.get("SESSIONPORT_JUDGE_API_KEY", "")
     model = os.environ.get("SESSIONPORT_JUDGE_MODEL", "gpt-4o-mini")
     if not api_key:
-        hint = "SESSIONPORT_JUDGE_API_KEY is not set; set it (plus SESSIONPORT_JUDGE_ENDPOINT / SESSIONPORT_JUDGE_MODEL)"
+        hint = (
+            "SESSIONPORT_JUDGE_API_KEY is not set; set it (plus "
+            "SESSIONPORT_JUDGE_ENDPOINT / SESSIONPORT_JUDGE_MODEL)"
+        )
         raise ScoreError(f"{hint} to score")
 
     def judge(prompt: str) -> str:
