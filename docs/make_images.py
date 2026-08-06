@@ -1,4 +1,4 @@
-"""Generate README images for sess (docs/images/).
+"""Generate README images for sessionport (docs/images/).
 
 - architecture.png: dark-theme system diagram with the five agent logos.
 - workflow.png: terminal window showing the export -> brief -> import loop.
@@ -92,7 +92,7 @@ def draw_text_center(d: ImageDraw.ImageDraw, cx: int, cy: int, text: str, font, 
 
 
 def make_architecture() -> str:
-    """Dark diagram: agents -> sess export -> brief -> sess import -> agents."""
+    """Dark diagram: agents -> sessionport export -> brief -> sessionport import -> agents."""
     W, H = 1600, 900
     canvas = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(canvas)
@@ -100,7 +100,7 @@ def make_architecture() -> str:
     small = load_font(18)
     tiny = load_font(14)
 
-    d.text((60, 40), "sess architecture", font=bold, fill=TEXT)
+    d.text((60, 40), "sessionport architecture", font=bold, fill=TEXT)
     d.text((60, 84), "portable agent sessions · open format · one command", font=small, fill=DIM)
 
     logo_size = 72
@@ -117,7 +117,7 @@ def make_architecture() -> str:
     bw, bh = 320, 130
     box1 = (680, 160, 680 + bw, 160 + bh)
     rounded_box(d, box1, 16)
-    draw_text_center(d, box1[0] + bw // 2, box1[1] + 45, "sess export", bold, TEXT)
+    draw_text_center(d, box1[0] + bw // 2, box1[1] + 45, "sessionport export", bold, TEXT)
     draw_text_center(d, box1[0] + bw // 2, box1[1] + 82, "extract durable state", small, DIM)
     draw_text_center(d, box1[0] + bw // 2, box1[1] + 106, "offline · deterministic", small, GREEN)
 
@@ -125,7 +125,7 @@ def make_architecture() -> str:
     box2 = (1120, 160, 1120 + bw, 160 + bh)
     rounded_box(d, box2, 16)
     draw_text_center(d, box2[0] + bw // 2, box2[1] + 40, "brief.md", bold, ACID)
-    draw_text_center(d, box2[0] + bw // 2, box2[1] + 76, "sess-brief/v1", small, DIM)
+    draw_text_center(d, box2[0] + bw // 2, box2[1] + 76, "sessionport-brief/v1", small, DIM)
     draw_text_center(d, box2[0] + bw // 2, box2[1] + 100, "markdown · human-readable", small, DIM)
 
     arrow(
@@ -141,7 +141,7 @@ def make_architecture() -> str:
     y2 = 520
     box3 = (680, y2, 680 + bw, y2 + bh)
     rounded_box(d, box3, 16)
-    draw_text_center(d, box3[0] + bw // 2, box3[1] + 45, "sess import", bold, TEXT)
+    draw_text_center(d, box3[0] + bw // 2, box3[1] + 45, "sessionport import", bold, TEXT)
     draw_text_center(d, box3[0] + bw // 2, box3[1] + 82, "resume prompt", small, DIM)
     draw_text_center(d, box3[0] + bw // 2, box3[1] + 106, "any target agent", small, GREEN)
 
@@ -162,7 +162,7 @@ def make_architecture() -> str:
     # fidelity scorer (optional)
     box4 = (160, 560, 160 + 440, 560 + 100)
     rounded_box(d, box4, 14)
-    draw_text_center(d, box4[0] + 220, box4[1] + 35, "sess score (optional)", bold, TEXT)
+    draw_text_center(d, box4[0] + 220, box4[1] + 35, "sessionport score (optional)", bold, TEXT)
     draw_text_center(
         d, box4[0] + 220, box4[1] + 70, "LLM fidelity check: what did the brief lose?", small, DIM
     )
@@ -170,7 +170,8 @@ def make_architecture() -> str:
 
     d.text(
         (60, 820),
-        "Default path is fully offline. The judge runs only when you call sess score with a key.",
+        "Default path is fully offline. The judge runs only when you call "
+        "sessionport score with a key.",
         font=small,
         fill=DIM,
     )
@@ -190,7 +191,7 @@ def make_workflow() -> str:
         ("o", "wrote brief-claude-code-9f9f9f9f.md (4 messages, ~121 tokens)"),
         ("$", "cat brief-claude-code-9f9f9f9f.md"),
         ("o", "---"),
-        ("o", "format: sess-brief/v1"),
+        ("o", "format: sessionport-brief/v1"),
         ("o", "## Decisions"),
         ("o", "- switch to httpOnly secure cookies"),
         ("o", "## State: files"),

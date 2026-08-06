@@ -3,7 +3,7 @@
 Extraction is heuristic and runs fully offline: no model calls, no network.
 It picks out the durable parts of a session (goal, decisions, files, URLs,
 code, next actions, constraints) and drops the chatter. The optional LLM
-fidelity scorer (``sess.score``) is a separate, opt-in layer.
+fidelity scorer (``sessionport.score``) is a separate, opt-in layer.
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-from sess.models import Message
+from sessionport.models import Message
 
 _FILE_RE = re.compile(
     r"(?<![\w])([\w./~-]+\.(?:py|ts|tsx|js|jsx|go|rs|md|json|yaml|yml|toml|sh|sql|css|html|swift|kt|java|rb|php|vue|svelte|ipynb|lock)(?::\d+)?|"

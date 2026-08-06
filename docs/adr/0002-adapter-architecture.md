@@ -21,8 +21,8 @@ Session access goes through a small `SessionStore` protocol
   message wrappers, generic `role`/`content` lines, tool-result blocks) and
   degrade to a generic line-based read instead of failing;
 - resolve store paths from environment overrides first
-  (`RELAY_CLAUDE_HOME`, `RELAY_CODEX_HOME`, `RELAY_GEMINI_HOME`,
-  `RELAY_OPENCODE_HOME`, `RELAY_HERMES_DB`), then platform defaults;
+  (`SESSIONPORT_CLAUDE_HOME`, `SESSIONPORT_CODEX_HOME`, `SESSIONPORT_GEMINI_HOME`,
+  `SESSIONPORT_OPENCODE_HOME`, `SESSIONPORT_HERMES_DB`), then platform defaults;
 - for SQLite (Hermes), introspect tables and map columns by name rather than
   assuming a fixed schema.
 

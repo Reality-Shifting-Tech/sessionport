@@ -7,19 +7,19 @@ from pathlib import Path
 
 import pytest
 
-from sess.brief import render
-from sess.cli import main
-from sess.models import Brief
-from sess.score import Score
+from sessionport.brief import render
+from sessionport.cli import main
+from sessionport.models import Brief
+from sessionport.score import Score
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
 def _env_homes(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("RELAY_CLAUDE_HOME", str(FIXTURES / "claude-code"))
-    monkeypatch.setenv("RELAY_CODEX_HOME", str(FIXTURES / "codex"))
-    monkeypatch.setenv("RELAY_GEMINI_HOME", str(FIXTURES / "gemini"))
-    monkeypatch.setenv("RELAY_OPENCODE_HOME", str(FIXTURES / "opencode"))
+    monkeypatch.setenv("SESSIONPORT_CLAUDE_HOME", str(FIXTURES / "claude-code"))
+    monkeypatch.setenv("SESSIONPORT_CODEX_HOME", str(FIXTURES / "codex"))
+    monkeypatch.setenv("SESSIONPORT_GEMINI_HOME", str(FIXTURES / "gemini"))
+    monkeypatch.setenv("SESSIONPORT_OPENCODE_HOME", str(FIXTURES / "opencode"))
 
 
 def _run(argv: list[str]) -> int:
@@ -46,7 +46,7 @@ def test_export_writes_brief(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) ->
     out = tmp_path / "brief.md"
     assert _run(["export", "claude-code:9f9f9f9f", "--out", str(out)]) == 0
     text = out.read_text(encoding="utf-8")
-    assert text.startswith("---\nformat: sess-brief/v1")
+    assert text.startswith("---\nformat: sessionport-brief/v1")
     assert "## Decisions" in text
     assert "login.py" in text
 
@@ -55,7 +55,7 @@ def test_export_json(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixt
     _env_homes(monkeypatch)
     assert _run(["export", "codex:session-xyz", "--json"]) == 0
     payload = json.loads(capsys.readouterr().out)
-    assert payload["format"] == "sess-brief/v1"
+    assert payload["format"] == "sessionport-brief/v1"
     assert "## Goal" in payload["brief"]
     assert payload["messages"] == 3
 
@@ -83,7 +83,7 @@ def test_import_renders_prompt(
     brief_file.write_text(render(brief), encoding="utf-8")
     assert _run(["import", str(brief_file), "--into", "opencode"]) == 0
     out = capsys.readouterr().out
-    assert "Resume from a relay brief" in out
+    assert "Resume from a sessionport brief" in out
     assert "opencode" in out
     assert "session-xyz" in out
 
@@ -124,7 +124,7 @@ def test_score_with_fake_judge(
         assert "auth bug" in transcript
         return Score(fidelity=0.88, missed=["one fact"], notes="ok")
 
-    monkeypatch.setattr("sess.cli.score_brief", fake_score)
+    monkeypatch.setattr("sessionport.cli.score_brief", fake_score)
     assert _run(["score", str(brief_file), "--source", "claude-code:9f9f9f9f", "--json"]) == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["fidelity"] == 0.88

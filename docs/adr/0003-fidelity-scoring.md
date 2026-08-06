@@ -12,10 +12,10 @@ tool dependent on network, keys, and cost, and makes the test suite flaky.
 
 ## Decision
 
-Fidelity scoring (`sess score`) is opt-in and never on the export path:
+Fidelity scoring (`sessionport score`) is opt-in and never on the export path:
 
-- it requires `RELAY_JUDGE_API_KEY` (plus optional
-  `RELAY_JUDGE_ENDPOINT` / `RELAY_JUDGE_MODEL`) and calls any
+- it requires `SESSIONPORT_JUDGE_API_KEY` (plus optional
+  `SESSIONPORT_JUDGE_ENDPOINT` / `SESSIONPORT_JUDGE_MODEL`) and calls any
   OpenAI-compatible chat endpoint;
 - the judge receives the rendered transcript (truncated at 120k characters)
   and the brief, and returns a JSON object: fidelity score, a list of missed
@@ -26,5 +26,5 @@ Fidelity scoring (`sess score`) is opt-in and never on the export path:
 
 Easier: the default path stays free, fast, and private; tests never touch the
 network. Harder: heuristic extraction can miss semantic nuance the judge would
-catch, so `sess score` is the honest answer to "did the brief lose anything".
+catch, so `sessionport score` is the honest answer to "did the brief lose anything".
 Follow-up: a local judge via Ollama for fully offline scoring.

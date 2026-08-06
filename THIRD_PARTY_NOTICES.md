@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-sess reads session stores produced by the following agent CLIs. sess is not
+sessionport reads session stores produced by the following agent CLIs. sessionport is not
 affiliated with, and does not endorse, any of them. Their names, logos, and
 session formats remain the property of their respective owners.
 
@@ -21,7 +21,7 @@ identify the compatible agent CLI.
 
 ## Dependencies
 
-sess is MIT licensed. Its runtime dependencies are:
+sessionport is MIT licensed. Its runtime dependencies are:
 
 - httpx (BSD-3-Clause)
 
@@ -29,6 +29,6 @@ Development-only: pytest (MIT), ruff (MIT), mypy (MIT), pillow (HPND).
 
 ## Session formats
 
-The brief format `sess-brief/v1` is original to this project. Parsers for
+The brief format `sessionport-brief/v1` is original to this project. Parsers for
 vendor session formats were written from observed file shapes; they are
 defensive by design and may not capture every vendor field.

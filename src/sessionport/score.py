@@ -1,7 +1,7 @@
 """Optional LLM fidelity scoring for briefs.
 
 The scorer answers one question: what did the original session know that the
-brief lost? It is opt-in (needs ``RELAY_JUDGE_API_KEY``), runs against any
+brief lost? It is opt-in (needs ``SESSIONPORT_JUDGE_API_KEY``), runs against any
 OpenAI-compatible chat endpoint, and is never on the export path. Tests inject
 a fake judge so the suite runs fully offline.
 """
@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 
 import httpx
 
-from sess.models import Message
+from sessionport.models import Message
 
 Judge = Callable[[str], str]
 
@@ -86,13 +86,13 @@ def parse_judge_output(raw: str) -> Score:
 
 def http_judge() -> Judge:
     """Build the default judge: an OpenAI-compatible chat completion call."""
-    endpoint = os.environ.get("RELAY_JUDGE_ENDPOINT", "https://api.openai.com/v1/chat/completions")
-    api_key = os.environ.get("RELAY_JUDGE_API_KEY", "")
-    model = os.environ.get("RELAY_JUDGE_MODEL", "gpt-4o-mini")
+    endpoint = os.environ.get(
+        "SESSIONPORT_JUDGE_ENDPOINT", "https://api.openai.com/v1/chat/completions"
+    )
+    api_key = os.environ.get("SESSIONPORT_JUDGE_API_KEY", "")
+    model = os.environ.get("SESSIONPORT_JUDGE_MODEL", "gpt-4o-mini")
     if not api_key:
-        hint = (
-            "RELAY_JUDGE_API_KEY is not set; set it (plus RELAY_JUDGE_ENDPOINT / RELAY_JUDGE_MODEL)"
-        )
+        hint = "SESSIONPORT_JUDGE_API_KEY is not set; set it (plus SESSIONPORT_JUDGE_ENDPOINT / SESSIONPORT_JUDGE_MODEL)"
         raise ScoreError(f"{hint} to score")
 
     def judge(prompt: str) -> str:

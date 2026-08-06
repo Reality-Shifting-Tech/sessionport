@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from sess.stores import (
+from sessionport.stores import (
     ClaudeCodeStore,
     CodexStore,
     GeminiStore,
@@ -22,10 +22,10 @@ FIXTURES = Path(__file__).parent / "fixtures"
 
 
 def _env_homes(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("RELAY_CLAUDE_HOME", str(FIXTURES / "claude-code"))
-    monkeypatch.setenv("RELAY_CODEX_HOME", str(FIXTURES / "codex"))
-    monkeypatch.setenv("RELAY_GEMINI_HOME", str(FIXTURES / "gemini"))
-    monkeypatch.setenv("RELAY_OPENCODE_HOME", str(FIXTURES / "opencode"))
+    monkeypatch.setenv("SESSIONPORT_CLAUDE_HOME", str(FIXTURES / "claude-code"))
+    monkeypatch.setenv("SESSIONPORT_CODEX_HOME", str(FIXTURES / "codex"))
+    monkeypatch.setenv("SESSIONPORT_GEMINI_HOME", str(FIXTURES / "gemini"))
+    monkeypatch.setenv("SESSIONPORT_OPENCODE_HOME", str(FIXTURES / "opencode"))
 
 
 def test_claude_code_list_and_load(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -96,7 +96,7 @@ def test_hermes_sqlite(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
     )
     conn.commit()
     conn.close()
-    monkeypatch.setenv("RELAY_HERMES_DB", str(db_path))
+    monkeypatch.setenv("SESSIONPORT_HERMES_DB", str(db_path))
 
     store = HermesStore()
     sessions = store.list_sessions()

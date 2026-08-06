@@ -6,11 +6,11 @@ quick-reference. Where the two overlap, CONTRIBUTING wins.
 
 ## What this is
 
-sess is an MIT-licensed CLI that carries AI agent sessions between agent
+sessionport is an MIT-licensed CLI that carries AI agent sessions between agent
 CLIs. It discovers sessions in each agent's local store (Claude Code, Codex,
-Gemini CLI, OpenCode, Hermes), exports them to a portable `sess-brief/v1`
+Gemini CLI, OpenCode, Hermes), exports them to a portable `sessionport-brief/v1`
 markdown brief, and imports a brief as a resume prompt into any target agent.
-Export is deterministic and fully offline; `sess score` is an opt-in LLM
+Export is deterministic and fully offline; `sessionport score` is an opt-in LLM
 fidelity check.
 
 ## Toolchain
@@ -39,13 +39,13 @@ Full pre-push gate: `make all` (lint + typecheck + test).
 ## Layout
 
 ```
-src/sess/            Core package
-  __main__.py        CLI entry (sess)
+src/sessionport/            Core package
+  __main__.py        CLI entry (sessionport)
   cli.py             argparse commands: list / export / import / score
   models.py          Message, SessionRef, Brief dataclasses
   stores.py          SessionStore adapters (one per agent) + resolve_session
   extract.py         Offline deterministic extraction heuristics
-  brief.py           sess-brief/v1 render + parse (round-trip tested)
+  brief.py           sessionport-brief/v1 render + parse (round-trip tested)
   score.py           Opt-in LLM fidelity judge (env-gated, injected in tests)
 docs/
   adr/               Architecture decision records (0000 template + 0001-0004)
@@ -67,8 +67,8 @@ tests/
 - Style bar is "edited, not generated": no narrating comments, no dead code,
   no speculative abstractions, reuse existing vocabulary.
 - Offline-by-default is a hard requirement: `export` and `import` never call
-  the network. LLM features are opt-in behind env-gated keys (`RELAY_JUDGE_*`).
-- Adapters resolve paths from `RELAY_*` env overrides before platform
+  the network. LLM features are opt-in behind env-gated keys (`SESSIONPORT_JUDGE_*`).
+- Adapters resolve paths from `SESSIONPORT_*` env overrides before platform
   defaults, and every adapter has a fixture + tests.
 
 ## Working agreement for agents
@@ -76,7 +76,7 @@ tests/
 - Never commit or push unless explicitly asked.
 - API keys are read from the environment only. Never write a secret into a
   file that could be committed, and never log transcript bodies or keys.
-- `sess score` spends tokens/credits when pointed at a live endpoint; do not
+- `sessionport score` spends tokens/credits when pointed at a live endpoint; do not
   run it casually.
 - When adding a new agent adapter: implement the store, add a sanitized
   fixture, add tests, register it in `stores()`, update the README, and add

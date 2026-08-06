@@ -6,11 +6,11 @@ parsers sniff known shapes and degrade to a generic line-based read instead
 of failing. Store locations can be overridden with environment variables so
 the tool works in CI and on unusual setups:
 
-- ``RELAY_CLAUDE_HOME`` (default ``~/.claude/projects``)
-- ``RELAY_CODEX_HOME`` (default ``~/.codex/sessions``)
-- ``RELAY_GEMINI_HOME`` (default ``~/.gemini/sessions``)
-- ``RELAY_OPENCODE_HOME`` (default varies by platform)
-- ``RELAY_HERMES_DB`` (default first existing ``~/.hermes/*.db`` candidate)
+- ``SESSIONPORT_CLAUDE_HOME`` (default ``~/.claude/projects``)
+- ``SESSIONPORT_CODEX_HOME`` (default ``~/.codex/sessions``)
+- ``SESSIONPORT_GEMINI_HOME`` (default ``~/.gemini/sessions``)
+- ``SESSIONPORT_OPENCODE_HOME`` (default varies by platform)
+- ``SESSIONPORT_HERMES_DB`` (default first existing ``~/.hermes/*.db`` candidate)
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ import sqlite3
 from pathlib import Path
 from typing import Protocol
 
-from sess.models import Message, SessionRef
+from sessionport.models import Message, SessionRef
 
 StoreError = RuntimeError
 
@@ -187,13 +187,13 @@ class JsonlStore:
 
 class ClaudeCodeStore(JsonlStore):
     def __init__(self) -> None:
-        home = Path(os.environ.get("RELAY_CLAUDE_HOME", Path.home() / ".claude" / "projects"))
+        home = Path(os.environ.get("SESSIONPORT_CLAUDE_HOME", Path.home() / ".claude" / "projects"))
         super().__init__("claude-code", home)
 
 
 class CodexStore(JsonlStore):
     def __init__(self) -> None:
-        home = Path(os.environ.get("RELAY_CODEX_HOME", Path.home() / ".codex" / "sessions"))
+        home = Path(os.environ.get("SESSIONPORT_CODEX_HOME", Path.home() / ".codex" / "sessions"))
         super().__init__("codex", home)
 
 
@@ -203,7 +203,9 @@ class GeminiStore:
     name = "gemini"
 
     def __init__(self) -> None:
-        self._home = Path(os.environ.get("RELAY_GEMINI_HOME", Path.home() / ".gemini" / "sessions"))
+        self._home = Path(
+            os.environ.get("SESSIONPORT_GEMINI_HOME", Path.home() / ".gemini" / "sessions")
+        )
 
     def list_sessions(self) -> list[SessionRef]:
         refs: list[SessionRef] = []
@@ -265,7 +267,7 @@ class OpenCodeStore:
     name = "opencode"
 
     def __init__(self) -> None:
-        home = os.environ.get("RELAY_OPENCODE_HOME")
+        home = os.environ.get("SESSIONPORT_OPENCODE_HOME")
         if not home:
             candidates = [
                 Path.home() / ".local" / "share" / "opencode",
@@ -345,13 +347,13 @@ class HermesStore:
 
     Hermes stores sessions in SQLite; the exact schema varies by version, so
     this adapter introspects tables and maps columns by name. Point
-    ``RELAY_HERMES_DB`` at the database when it is not auto-discovered.
+    ``SESSIONPORT_HERMES_DB`` at the database when it is not auto-discovered.
     """
 
     name = "hermes"
 
     def __init__(self) -> None:
-        override = os.environ.get("RELAY_HERMES_DB")
+        override = os.environ.get("SESSIONPORT_HERMES_DB")
         if override:
             self._db = Path(override)
         else:

@@ -3,7 +3,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sess"
+name = "sessionport"
 version = "0.1.0"
 description = "Portable agent sessions: export, carry, and resume work between any coding agent CLI. One command, open format."
 readme = "README.md"
@@ -38,12 +38,12 @@ dev = [
 ]
 
 [project.scripts]
-sess = "sess.__main__:main"
+sessionport = "sessionport.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/Reality-Shifting-Tech/sess"
-Repository = "https://github.com/Reality-Shifting-Tech/sess"
-Source = "https://github.com/Reality-Shifting-Tech/sess"
+Homepage = "https://github.com/Reality-Shifting-Tech/sessionport"
+Repository = "https://github.com/Reality-Shifting-Tech/sessionport"
+Source = "https://github.com/Reality-Shifting-Tech/sessionport"
 
 [tool.setuptools.packages.find]
 where = ["src"]

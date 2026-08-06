@@ -1,12 +1,12 @@
-"""sess command line interface.
+"""sessionport command line interface.
 
 Commands:
 
-- ``sess list``       discover sessions across installed agent stores
-- ``sess export``     turn a session into a portable sess-brief/v1 file
-- ``sess import``     turn a brief into a resume prompt for any agent
-- ``sess score``      LLM fidelity check: what did the brief lose?
-- ``sess version``    print version
+- ``sessionport list``       discover sessions across installed agent stores
+- ``sessionport export``     turn a session into a portable sessionport-brief/v1 file
+- ``sessionport import``     turn a brief into a resume prompt for any agent
+- ``sessionport score``      LLM fidelity check: what did the brief lose?
+- ``sessionport version``    print version
 """
 
 from __future__ import annotations
@@ -18,15 +18,15 @@ import subprocess
 import sys
 from pathlib import Path
 
-from sess import __version__
-from sess.brief import FORMAT, now_iso, render
-from sess.brief import parse as parse_brief
-from sess.extract import estimate_tokens, extract
-from sess.models import Brief, SessionRef
-from sess.score import Score, ScoreError, score_brief, transcript_text
-from sess.stores import StoreError, resolve_session, stores
+from sessionport import __version__
+from sessionport.brief import FORMAT, now_iso, render
+from sessionport.brief import parse as parse_brief
+from sessionport.extract import estimate_tokens, extract
+from sessionport.models import Brief, SessionRef
+from sessionport.score import Score, ScoreError, score_brief, transcript_text
+from sessionport.stores import StoreError, resolve_session, stores
 
-_BOOT_PROMPT_TEMPLATE = """Resume from a relay brief.
+_BOOT_PROMPT_TEMPLATE = """Resume from a sessionport brief.
 
 The sections below are ground truth from an earlier session with {agent}
 (session {session}). Continue the work: do not re-litigate settled decisions,
@@ -40,7 +40,7 @@ outcomes are recorded here. If you need a fact that is missing, say so and ask.
 
 
 def _print_error(message: str) -> None:
-    print(f"sess: error: {message}", file=sys.stderr)
+    print(f"sessionport: error: {message}", file=sys.stderr)
 
 
 def _json_out(obj: object) -> None:
@@ -204,13 +204,13 @@ def cmd_score(args: argparse.Namespace) -> int:
 
 
 def cmd_version(_: argparse.Namespace) -> int:
-    print(f"sess {__version__} (brief format {FORMAT})")
+    print(f"sessionport {__version__} (brief format {FORMAT})")
     return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="sess", description="Portable agent sessions: carry context between agent CLIs."
+        prog="sessionport", description="Portable agent sessions: carry context between agent CLIs."
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -219,21 +219,21 @@ def build_parser() -> argparse.ArgumentParser:
     list_p.add_argument("--json", action="store_true", help="machine-readable output")
     list_p.set_defaults(func=cmd_list)
 
-    export_p = sub.add_parser("export", help="export a session to a sess brief")
+    export_p = sub.add_parser("export", help="export a session to a sessionport brief")
     export_p.add_argument("session", help="session reference, agent:id (e.g. claude-code:abc123)")
     export_p.add_argument("--out", help="output path (default brief-<agent>-<id>.md)")
     export_p.add_argument("--json", action="store_true", help="print brief as JSON, no file")
     export_p.set_defaults(func=cmd_export)
 
     import_p = sub.add_parser("import", help="build a resume prompt from a brief")
-    import_p.add_argument("file", help="sess brief file")
+    import_p.add_argument("file", help="sessionport brief file")
     import_p.add_argument("--into", help="target agent name (default: brief's source agent)")
     import_p.add_argument("--copy", action="store_true", help="copy prompt to clipboard (macOS)")
     import_p.add_argument("--out", help="write the prompt to a file")
     import_p.set_defaults(func=cmd_import)
 
     score_p = sub.add_parser("score", help="LLM fidelity check: what did the brief lose?")
-    score_p.add_argument("file", help="sess brief file")
+    score_p.add_argument("file", help="sessionport brief file")
     score_p.add_argument("--source", required=True, help="source session reference, agent:id")
     score_p.add_argument("--json", action="store_true", help="machine-readable output")
     score_p.set_defaults(func=cmd_score)

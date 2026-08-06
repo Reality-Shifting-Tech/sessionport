@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest in sess. This document is the contract between you
+Thanks for your interest in sessionport. This document is the contract between you
 and the maintainers; please read it before opening a pull request.
 
 ## Development setup
@@ -53,16 +53,16 @@ messages, so write them for a reader, not for the diff.
 ## Offline-by-default rule
 
 The export path must stay free, fast, and private. Do not add network calls,
-telemetry, or LLM dependencies to `sess export` or `sess import`. LLM
-features belong behind `sess score`-style opt-in paths with env-gated keys.
+telemetry, or LLM dependencies to `sessionport export` or `sessionport import`. LLM
+features belong behind `sessionport score`-style opt-in paths with env-gated keys.
 PRs that break offline-by-default will be rejected.
 
 ## Adding an adapter
 
 Each agent CLI stores sessions differently, so a new adapter is:
 
-1. A `SessionStore` implementation in `src/sess/stores.py` (or its own module
-   if it grows), resolving its path from a `RELAY_*` env override first.
+1. A `SessionStore` implementation in `src/sessionport/stores.py` (or its own module
+   if it grows), resolving its path from a `SESSIONPORT_*` env override first.
 2. A fixture transcript in `tests/fixtures/<agent>/` using the real vendor
    format (a sanitized sample, never a real session).
 3. Tests in `tests/test_stores.py` covering list + load, plus an extraction

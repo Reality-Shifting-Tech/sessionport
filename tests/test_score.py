@@ -4,8 +4,14 @@ from __future__ import annotations
 
 import pytest
 
-from sess.models import Message
-from sess.score import ScoreError, build_prompt, parse_judge_output, score_brief, transcript_text
+from sessionport.models import Message
+from sessionport.score import (
+    ScoreError,
+    build_prompt,
+    parse_judge_output,
+    score_brief,
+    transcript_text,
+)
 
 
 def test_build_prompt_contains_both_sources() -> None:

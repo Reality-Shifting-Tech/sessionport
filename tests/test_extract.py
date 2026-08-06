@@ -6,21 +6,21 @@ from pathlib import Path
 
 import pytest
 
-from sess.extract import estimate_tokens, extract
-from sess.stores import ClaudeCodeStore, CodexStore, GeminiStore
+from sessionport.extract import estimate_tokens, extract
+from sessionport.stores import ClaudeCodeStore, CodexStore, GeminiStore
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
 def _store_messages(monkeypatch: pytest.MonkeyPatch, agent: str, session_id: str):
     if agent == "claude-code":
-        monkeypatch.setenv("RELAY_CLAUDE_HOME", str(FIXTURES / "claude-code"))
+        monkeypatch.setenv("SESSIONPORT_CLAUDE_HOME", str(FIXTURES / "claude-code"))
         store = ClaudeCodeStore()
     elif agent == "codex":
-        monkeypatch.setenv("RELAY_CODEX_HOME", str(FIXTURES / "codex"))
+        monkeypatch.setenv("SESSIONPORT_CODEX_HOME", str(FIXTURES / "codex"))
         store = CodexStore()
     else:
-        monkeypatch.setenv("RELAY_GEMINI_HOME", str(FIXTURES / "gemini"))
+        monkeypatch.setenv("SESSIONPORT_GEMINI_HOME", str(FIXTURES / "gemini"))
         store = GeminiStore()
     return store.load_transcript(session_id)
 

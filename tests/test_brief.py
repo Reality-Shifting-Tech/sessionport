@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from sess.brief import FORMAT, parse, render
-from sess.models import Brief
+from sessionport.brief import FORMAT, parse, render
+from sessionport.models import Brief
 
 
 def _sample() -> Brief:
@@ -26,7 +26,7 @@ def _sample() -> Brief:
 
 def test_render_contains_sections() -> None:
     text = render(_sample())
-    assert text.startswith("---\nformat: sess-brief/v1")
+    assert text.startswith("---\nformat: sessionport-brief/v1")
     assert "## Goal" in text
     assert "## Decisions" in text
     assert "## State: files" in text
@@ -68,4 +68,4 @@ def test_parse_empty_sections() -> None:
 
 
 def test_format_constant() -> None:
-    assert FORMAT == "sess-brief/v1"
+    assert FORMAT == "sessionport-brief/v1"

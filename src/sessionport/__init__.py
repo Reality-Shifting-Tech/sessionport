@@ -1,4 +1,4 @@
-"""sess: portable agent sessions.
+"""sessionport: portable agent sessions.
 
 Export, carry, and resume work between any coding agent CLI.
 """

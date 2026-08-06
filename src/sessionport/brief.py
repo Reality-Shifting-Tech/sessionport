@@ -1,4 +1,4 @@
-"""The sess-brief/v1 format: render and parse.
+"""The sessionport-brief/v1 format: render and parse.
 
 A brief is a markdown document with YAML-flavored frontmatter (flat keys only,
 kept dependency-free) followed by labeled sections. It is human-readable,
@@ -10,9 +10,9 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from sess.models import Brief
+from sessionport.models import Brief
 
-FORMAT = "sess-brief/v1"
+FORMAT = "sessionport-brief/v1"
 _SECTION_ORDER = (
     ("goal", "Goal"),
     ("decisions", "Decisions"),
@@ -39,7 +39,7 @@ def _frontmatter(brief: Brief) -> str:
 
 
 def render(brief: Brief) -> str:
-    """Render a Brief to the canonical sess-brief/v1 markdown."""
+    """Render a Brief to the canonical sessionport-brief/v1 markdown."""
     parts = [_frontmatter(brief), "", f"# Session brief ({brief.source_agent})", ""]
     for field_name, heading in _SECTION_ORDER:
         if field_name == "goal":
@@ -71,7 +71,7 @@ def _parse_frontmatter(text: str) -> dict[str, str]:
 
 
 def parse(text: str) -> Brief:
-    """Parse a sess-brief/v1 document back into a Brief."""
+    """Parse a sessionport-brief/v1 document back into a Brief."""
     meta = _parse_frontmatter(text)
     source_agent = meta.get("source-agent", "unknown")
     session = meta.get("session", "unknown")

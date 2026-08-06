@@ -15,7 +15,7 @@ investigate and fix.
 
 ## Scope
 
-sess reads local agent session transcripts (which can contain source code,
+sessionport reads local agent session transcripts (which can contain source code,
 paths, tokens, and other sensitive context) and, only when you opt in, sends a
 truncated transcript plus a brief to an LLM judge endpoint for fidelity
 scoring. Issues involving transcript handling, the optional judge call
@@ -25,7 +25,7 @@ store-path resolution are treated as high priority.
 ## Design posture
 
 - The export path is fully offline: no network calls, no telemetry.
-- Judge calls (`sess score`) only happen with `RELAY_JUDGE_API_KEY` set, go to
+- Judge calls (`sessionport score`) only happen with `SESSIONPORT_JUDGE_API_KEY` set, go to
   the endpoint you configure, and truncate transcripts to 120k characters.
 - Store locations resolve from explicit environment overrides before any
   platform default, so the tool can be pointed at copies instead of live
@@ -35,5 +35,5 @@ store-path resolution are treated as high priority.
 
 ## Supported versions
 
-sess is pre-release. Only the latest commit on the default branch receives
+sessionport is pre-release. Only the latest commit on the default branch receives
 security fixes until the first stable version is published.

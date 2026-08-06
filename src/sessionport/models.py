@@ -1,4 +1,4 @@
-"""Core data models for sess."""
+"""Core data models for sessionport."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ class SessionRef:
 
 @dataclass
 class Brief:
-    """The canonical portable session brief (sess-brief/v1)."""
+    """The canonical portable session brief (sessionport-brief/v1)."""
 
     source_agent: str
     session: str
