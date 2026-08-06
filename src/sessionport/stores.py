@@ -261,6 +261,96 @@ class ClineStore(JsonlStore):
         super().__init__("cline", home, recursive=True)
 
 
+class GenericJsonlStore(JsonlStore):
+    """Base for agents with JSONL session stores under ``~/.<name>``.
+
+    Resolves the store home from a ``SESSIONPORT_<NAME>_HOME`` override first,
+    then the first existing candidate path, then the first candidate.
+    """
+
+    def __init__(self, name: str, env_key: str, candidates: list[Path]) -> None:
+        override = os.environ.get(env_key)
+        home = (
+            Path(override)
+            if override
+            else next((p for p in candidates if p.is_dir()), candidates[0])
+        )
+        super().__init__(name, home, recursive=True)
+
+
+class GooseStore(GenericJsonlStore):
+    """Goose (Block) sessions, JSONL under ~/.goose."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "goose",
+            "SESSIONPORT_GOOSE_HOME",
+            [Path.home() / ".goose" / "sessions", Path.home() / ".goose"],
+        )
+
+
+class KiloStore(GenericJsonlStore):
+    """Kilo (Cerebras) sessions, JSONL under ~/.kilo."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "kilo",
+            "SESSIONPORT_KILO_HOME",
+            [Path.home() / ".kilo" / "sessions", Path.home() / ".kilo"],
+        )
+
+
+class JunieStore(GenericJsonlStore):
+    """Junie (JetBrains) sessions, JSONL under ~/.junie."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "junie",
+            "SESSIONPORT_JUNIE_HOME",
+            [Path.home() / ".junie" / "sessions", Path.home() / ".junie"],
+        )
+
+
+class GrokStore(GenericJsonlStore):
+    """Grok Code (xAI) sessions, JSONL under ~/.grok."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "grok",
+            "SESSIONPORT_GROK_HOME",
+            [Path.home() / ".grok" / "sessions", Path.home() / ".grok"],
+        )
+
+
+class CopilotStore(GenericJsonlStore):
+    """GitHub Copilot CLI sessions, JSONL under ~/.copilot-cli."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "copilot",
+            "SESSIONPORT_COPILOT_HOME",
+            [
+                Path.home() / ".copilot-cli" / "sessions",
+                Path.home() / ".copilot-cli",
+            ],
+        )
+
+
+class VibeStore(GenericJsonlStore):
+    """Mistral Vibe sessions, JSONL under ~/.vibe."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "vibe",
+            "SESSIONPORT_VIBE_HOME",
+            [
+                Path.home() / ".vibe" / "sessions",
+                Path.home() / ".local" / "share" / "vibe" / "sessions",
+                Path.home() / ".vibe",
+            ],
+        )
+
+
 class AiderStore:
     """Aider session history (markdown files under ~/.aider.chat/history).
 
@@ -595,6 +685,12 @@ def stores() -> dict[str, SessionStore]:
         "windsurf": WindsurfStore(),
         "openclaw": OpenClawStore(),
         "cline": ClineStore(),
+        "goose": GooseStore(),
+        "kilo": KiloStore(),
+        "junie": JunieStore(),
+        "grok": GrokStore(),
+        "copilot": CopilotStore(),
+        "vibe": VibeStore(),
         "gemini": GeminiStore(),
         "opencode": OpenCodeStore(),
         "hermes": HermesStore(),

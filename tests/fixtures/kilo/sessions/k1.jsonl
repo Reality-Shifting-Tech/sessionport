@@ -1,0 +1,2 @@
+{"role":"user","content":"Port the auth service"}
+{"role":"assistant","content":"Decision: ship it incrementally. Files: main.py."}

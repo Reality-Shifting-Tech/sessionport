@@ -9,11 +9,12 @@ quick-reference. Where the two overlap, CONTRIBUTING wins.
 sessionport is an MIT-licensed CLI that carries AI agent sessions between
 agent CLIs. It discovers sessions in each agent's local store (Claude Code,
 Codex, Gemini CLI, OpenCode, Hermes, Cursor, Aider, Windsurf, OpenClaw,
-Cline), exports them to a portable `sessionport-brief/v1` markdown brief, and
-imports a brief as a resume prompt into any target agent. Export is
-deterministic and fully offline; `sessionport score` is an opt-in LLM
-fidelity check; `sessionport mcp` exposes the loop over MCP stdio (optional
-dependency).
+Cline, Goose, Kilo, Junie, Grok Code, Copilot CLI, Vibe), exports them to a
+portable `sessionport-brief/v1` markdown brief, and imports a brief as a
+resume prompt into any target agent. Export is deterministic and fully
+offline; `sessionport score` is an opt-in LLM fidelity check;
+`sessionport mcp` exposes the loop over MCP stdio (optional dependency);
+`search`/`diff`/`stats`/`doctor` answer fleet questions offline.
 
 ## Toolchain
 
@@ -44,14 +45,16 @@ Full pre-push gate: `make all` (lint + typecheck + test).
 src/sessionport/     Core package
   __main__.py        CLI entry (sessionport)
   cli.py             argparse commands: list / export / import / score / mcp
+                     / search / diff / stats / doctor
   models.py          Message, SessionRef, Brief dataclasses
-  stores.py          SessionStore adapters (10 agents) + resolve_session
+  stores.py          SessionStore adapters (16 agents) + resolve_session
   extract.py         Offline deterministic extraction heuristics
   brief.py           sessionport-brief/v1 render + parse (round-trip tested)
   score.py           Opt-in LLM fidelity judge (env-gated, injected in tests)
   mcp_server.py      MCP stdio tools over the library (optional mcp dep)
+  tools.py           Fleet tooling: search, diff, stats, doctor (offline)
 docs/
-  adr/               Architecture decision records (0000 template + 0001-0005)
+  adr/               Architecture decision records (0000 template + 0001-0006)
   images/            README assets: architecture.png, workflow.png,
                      terminal-demo.gif, agents/*.png (official logos)
   make_images.py     Deterministic PIL image generator (make images)

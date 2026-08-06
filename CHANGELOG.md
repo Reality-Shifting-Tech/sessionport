@@ -4,6 +4,24 @@ All notable changes to sessionport are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] - 2026-08-06
+
+### Added
+
+- Six new adapters: Goose (Block), Kilo (Cerebras), Junie (JetBrains),
+  Grok Code (xAI), Copilot CLI (GitHub), Vibe (Mistral) — sixteen agents
+  total. All share the defensive JSONL adapter base with `SESSIONPORT_*`
+  env overrides, fixtures, and tests.
+- Fleet tooling (ADR-0006), fully offline:
+  - `sessionport search QUERY` — search every transcript, all agents
+  - `sessionport diff OLD NEW` — section-by-section brief comparison
+  - `sessionport stats` — sessions/messages/tokens per agent
+  - `sessionport doctor` — which stores were found, judge config
+- Homebrew formula and `Reality-Shifting-Tech/homebrew-sessionport` tap.
+- Official product logos for all 16 agents in the architecture diagram;
+  wide logos (Goose) render full-fit.
+- 54 passing tests.
+
 ## [0.2.0] - 2026-08-06
 
 ### Added

@@ -12,12 +12,18 @@ from sessionport.stores import (
     ClaudeCodeStore,
     ClineStore,
     CodexStore,
+    CopilotStore,
     CursorStore,
     GeminiStore,
+    GooseStore,
+    GrokStore,
     HermesStore,
+    JunieStore,
+    KiloStore,
     OpenClawStore,
     OpenCodeStore,
     StoreError,
+    VibeStore,
     WindsurfStore,
     resolve_session,
     stores,
@@ -36,6 +42,12 @@ def _env_homes(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("SESSIONPORT_WINDSURF_HOME", str(FIXTURES / "windsurf" / "sessions"))
     monkeypatch.setenv("SESSIONPORT_OPENCLAW_HOME", str(FIXTURES / "openclaw" / "sessions"))
     monkeypatch.setenv("SESSIONPORT_CLINE_HOME", str(FIXTURES / "cline" / "tasks"))
+    monkeypatch.setenv("SESSIONPORT_GOOSE_HOME", str(FIXTURES / "goose" / "sessions"))
+    monkeypatch.setenv("SESSIONPORT_KILO_HOME", str(FIXTURES / "kilo" / "sessions"))
+    monkeypatch.setenv("SESSIONPORT_JUNIE_HOME", str(FIXTURES / "junie" / "sessions"))
+    monkeypatch.setenv("SESSIONPORT_GROK_HOME", str(FIXTURES / "grok" / "sessions"))
+    monkeypatch.setenv("SESSIONPORT_COPILOT_HOME", str(FIXTURES / "copilot" / "sessions"))
+    monkeypatch.setenv("SESSIONPORT_VIBE_HOME", str(FIXTURES / "vibe" / "sessions"))
 
 
 def test_claude_code_list_and_load(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -130,6 +142,31 @@ def test_cline_jsonl(monkeypatch: pytest.MonkeyPatch) -> None:
     messages = store.load_transcript("t1")
     assert [m.role for m in messages] == ["user", "assistant"]
     assert "typer" in messages[1].text
+
+
+@pytest.mark.parametrize(
+    ("store_cls", "agent", "session_id"),
+    [
+        (GooseStore, "goose", "g1"),
+        (KiloStore, "kilo", "k1"),
+        (JunieStore, "junie", "j1"),
+        (GrokStore, "grok", "gk1"),
+        (CopilotStore, "copilot", "c1"),
+        (VibeStore, "vibe", "v1"),
+    ],
+)
+def test_generic_jsonl_adapters(
+    monkeypatch: pytest.MonkeyPatch, store_cls, agent: str, session_id: str
+) -> None:
+    _env_homes(monkeypatch)
+    store = store_cls()
+    sessions = store.list_sessions()
+    assert len(sessions) == 1
+    assert sessions[0].session_id == session_id
+    assert sessions[0].agent == agent
+    messages = store.load_transcript(session_id)
+    assert [m.role for m in messages] == ["user", "assistant"]
+    assert "Decision: ship it incrementally" in messages[1].text
 
 
 def test_opencode_json_parts(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -17,6 +17,12 @@ owners.
 | Windsurf | Codeium | JSONL sessions under `~/.windsurf` | github.com/codeium |
 | OpenClaw | OpenClaw | JSONL sessions under `~/.openclaw` | github.com/openclaw |
 | Cline | Cline | JSONL tasks under `~/.config/cline/tasks` | github.com/cline |
+| Goose | Block | JSONL sessions under `~/.goose` | block/goose repo (product logo) |
+| Kilo | Cerebras | JSONL sessions under `~/.kilo` | github.com/cerebras |
+| Junie | JetBrains | JSONL sessions under `~/.junie` | github.com/JetBrains |
+| Grok Code | xAI | JSONL sessions under `~/.grok` | github.com/xai-org |
+| Copilot CLI | GitHub | JSONL sessions under `~/.copilot-cli` | github.com/github |
+| Vibe | Mistral | JSONL sessions under `~/.vibe` | github.com/mistralai |
 
 ## Logos
 

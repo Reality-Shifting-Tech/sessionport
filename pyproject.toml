@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sessionport"
-version = "0.2.0"
+version = "0.3.0"
 description = "Portable agent sessions: export, carry, and resume work between any coding agent CLI. One command, open format."
 readme = "README.md"
 requires-python = ">=3.11"

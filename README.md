@@ -45,12 +45,20 @@ sessionport is the missing layer. It reads any agent's local session store, dist
 | <img src="docs/images/agents/windsurf.png" width="24"> | **Windsurf** | JSONL sessions (`~/.windsurf`) |
 | <img src="docs/images/agents/openclaw.png" width="24"> | **OpenClaw** | JSONL sessions (`~/.openclaw`) |
 | <img src="docs/images/agents/cline.png" width="24"> | **Cline** | JSONL tasks (`~/.config/cline/tasks`) |
+| <img src="docs/images/agents/goose.png" width="24"> | **Goose** (Block) | JSONL sessions (`~/.goose`) |
+| <img src="docs/images/agents/kilo.png" width="24"> | **Kilo** (Cerebras) | JSONL sessions (`~/.kilo`) |
+| <img src="docs/images/agents/junie.png" width="24"> | **Junie** (JetBrains) | JSONL sessions (`~/.junie`) |
+| <img src="docs/images/agents/grok.png" width="24"> | **Grok Code** (xAI) | JSONL sessions (`~/.grok`) |
+| <img src="docs/images/agents/copilot.png" width="24"> | **Copilot CLI** (GitHub) | JSONL sessions (`~/.copilot-cli`) |
+| <img src="docs/images/agents/vibe.png" width="24"> | **Vibe** (Mistral) | JSONL sessions (`~/.vibe`) |
 
 Every store location can be overridden with a `SESSIONPORT_*` environment
 variable for CI and unusual setups (`SESSIONPORT_CLAUDE_HOME`,
 `SESSIONPORT_CODEX_HOME`, `SESSIONPORT_GEMINI_HOME`, `SESSIONPORT_OPENCODE_HOME`,
 `SESSIONPORT_HERMES_DB`, `SESSIONPORT_CURSOR_HOME`, `SESSIONPORT_AIDER_HOME`,
-`SESSIONPORT_WINDSURF_HOME`, `SESSIONPORT_OPENCLAW_HOME`, `SESSIONPORT_CLINE_HOME`).
+`SESSIONPORT_WINDSURF_HOME`, `SESSIONPORT_OPENCLAW_HOME`, `SESSIONPORT_CLINE_HOME`,
+`SESSIONPORT_GOOSE_HOME`, `SESSIONPORT_KILO_HOME`, `SESSIONPORT_JUNIE_HOME`,
+`SESSIONPORT_GROK_HOME`, `SESSIONPORT_COPILOT_HOME`, `SESSIONPORT_VIBE_HOME`).
 
 ## Install
 
@@ -60,6 +68,9 @@ pip install sessionport
 pip install 'sessionport[mcp]'
 # or
 uv tool install sessionport
+# or Homebrew
+brew tap reality-shifting-tech/sessionport
+brew install sessionport
 ```
 
 Requires Python >= 3.11. macOS, Linux, and Windows.
@@ -165,6 +176,24 @@ sessionport score brief.md --source claude-code:9f9f9f9f --endpoint http://local
 The judge never runs on the export path, and transcripts are truncated to
 120k characters.
 
+## Fleet tooling
+
+sessionport is also a fleet dashboard in one command, fully offline:
+
+```bash
+# where did I talk about X? every transcript, every agent
+sessionport search "auth bug"
+
+# what changed between two briefs? per-section, no LLM
+sessionport diff brief-old.md brief-new.md
+
+# how big is my fleet?
+sessionport stats
+
+# is my install working? which stores were found?
+sessionport doctor
+```
+
 ## MCP server
 
 `sessionport mcp` exposes the same loop over MCP stdio for any MCP client
@@ -183,6 +212,10 @@ sessionport list [--agent NAME] [--json]
 sessionport export [SESSION] [--all] [--agent NAME] [--out FILE] [--out-dir DIR] [--json]
 sessionport import FILE [--into AGENT] [--copy] [--out FILE]
 sessionport score FILE --source AGENT:SESSION [--endpoint URL] [--model NAME] [--json]
+sessionport search QUERY [--agent NAME] [--limit N] [--json]
+sessionport diff OLD NEW [--json]
+sessionport stats [--agent NAME] [--json]
+sessionport doctor [--json]
 sessionport mcp
 sessionport version
 ```
@@ -199,16 +232,16 @@ make all          # lint + typecheck + test (the full gate)
 make images       # regenerate docs/images
 ```
 
-42 tests, zero-warning lint, strict mypy. See [AGENTS.md](AGENTS.md) for the
+54 passing tests, zero-warning lint, strict mypy. See [AGENTS.md](AGENTS.md) for the
 operational reference and [CONTRIBUTING.md](CONTRIBUTING.md) for the
 contribution contract.
 
 ## Roadmap
 
-- More adapters (Warp, Copilot CLI, Mistral Vibe) and a community adapter SDK
-- Local judge via Ollama one-liner (`sessionport score --endpoint http://localhost:11434/v1`)
-- Homebrew formula
-- Brief diff tool (`sessionport diff old.md new.md`)
+- Community adapter SDK and adapter registry
+- Tokenized search index for very large fleets
+- Brief diff tooling polish (`--stat` style summaries)
+- Windows installer (winget)
 
 ## License
 

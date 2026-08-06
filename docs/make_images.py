@@ -36,6 +36,12 @@ AGENTS = [
     "windsurf",
     "openclaw",
     "cline",
+    "goose",
+    "kilo",
+    "junie",
+    "grok",
+    "copilot",
+    "vibe",
 ]
 FONT_CANDIDATES = [
     "/System/Library/Fonts/Menlo.ttc",
@@ -52,14 +58,20 @@ def load_font(size: int) -> ImageFont.FreeTypeFont:
 
 
 def agent_logo(name: str, size: int) -> Image.Image:
-    """The official agent logo in a circular crop."""
+    """The official agent logo in a circular crop (full fit for wide logos)."""
     path = os.path.join(AGENTS_DIR, f"{name}.png")
     img = Image.open(path).convert("RGBA")
+    canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    aspect = img.width / img.height
+    if aspect < 0.6:
+        # Wide logo (wordmark/banner): scale to fit inside, no circular mask.
+        img.thumbnail((size, size), Image.LANCZOS)
+        canvas.paste(img, ((size - img.width) // 2, (size - img.height) // 2), img)
+        return canvas
     img.thumbnail((size, size), Image.LANCZOS)
     mask = Image.new("L", (size, size), 0)
     mask_draw = ImageDraw.Draw(mask)
     mask_draw.ellipse((0, 0, size, size), fill=255)
-    canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     canvas.paste(img, ((size - img.width) // 2, (size - img.height) // 2), img)
     canvas.putalpha(mask)
     return canvas
@@ -115,19 +127,22 @@ def make_architecture() -> str:
     d.text((60, 84), "portable agent sessions · open format · one command", font=small, fill=DIM)
 
     logo_size = 72
-    gap = 40
-    start_x = 90
+    gap = 34
+    start_x = 70
+    per_row = 8
+    row_step = 118
 
     def draw_agents(d, y: int, label: str) -> None:
         d.text((start_x, y - 40), label, font=small, fill=DIM)
-        for i, name in enumerate(AGENTS[:5]):
+        for i, name in enumerate(AGENTS[:per_row]):
             x = start_x + i * (logo_size + gap)
             canvas.paste(agent_logo(name, logo_size), (x, y), agent_logo(name, logo_size))
             d.text((x, y + logo_size + 8), name, font=tiny, fill=DIM)
-        for i, name in enumerate(AGENTS[5:]):
+        for i, name in enumerate(AGENTS[per_row:]):
             x = start_x + i * (logo_size + gap)
-            canvas.paste(agent_logo(name, logo_size), (x, y + 128), agent_logo(name, logo_size))
-            d.text((x, y + 128 + logo_size + 8), name, font=tiny, fill=DIM)
+            y2 = y + row_step
+            canvas.paste(agent_logo(name, logo_size), (x, y2), agent_logo(name, logo_size))
+            d.text((x, y2 + logo_size + 8), name, font=tiny, fill=DIM)
 
     draw_agents(d, 190, "sources")
 
@@ -146,13 +161,9 @@ def make_architecture() -> str:
     draw_text_center(d, box2[0] + bw // 2, box2[1] + 76, "sessionport-brief/v1", small, DIM)
     draw_text_center(d, box2[0] + bw // 2, box2[1] + 100, "markdown · human-readable", small, DIM)
 
-    arrow(
-        d,
-        start_x + 5 * (logo_size + gap) - gap + 20,
-        190 + 128 + logo_size // 2,
-        box1[0],
-        box1[1] + 60,
-    )
+    last_x = start_x + (per_row - 1) * (logo_size + gap)
+    last_y = 190 + row_step + logo_size // 2
+    arrow(d, last_x, last_y, box1[0], box1[1] + 60)
     arrow(d, box1[0] + bw, box1[1] + 70, box2[0], box2[1] + 70)
 
     # import row
@@ -166,13 +177,7 @@ def make_architecture() -> str:
     draw_agents(d, 580, "targets")
 
     arrow(d, box2[0] + 40, box2[1] + bh - 10, box3[0] + 60, box3[1])
-    arrow(
-        d,
-        box3[0] + bw,
-        box3[1] + 70,
-        start_x + 5 * (logo_size + gap) - gap + 20,
-        580 + 128 + logo_size // 2,
-    )
+    arrow(d, box3[0] + bw, box3[1] + 70, last_x, 580 + row_step + logo_size // 2)
 
     # fidelity scorer (optional)
     box4 = (1120, 560, 1120 + 440, 560 + 100)

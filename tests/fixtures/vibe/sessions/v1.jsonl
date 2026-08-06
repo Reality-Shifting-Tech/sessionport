@@ -1,0 +1,2 @@
+{"role":"user","content":"Rewrite the scraper"}
+{"role":"assistant","content":"Decision: ship it incrementally. Files: main.py."}

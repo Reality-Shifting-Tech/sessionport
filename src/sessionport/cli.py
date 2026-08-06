@@ -18,7 +18,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from sessionport import __version__
+from sessionport import __version__, tools
 from sessionport.brief import FORMAT, now_iso, render
 from sessionport.brief import parse as parse_brief
 from sessionport.extract import estimate_tokens, extract
@@ -266,6 +266,83 @@ def cmd_mcp(_: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_search(args: argparse.Namespace) -> int:
+    try:
+        hits = tools.search(stores(), args.query, agent=args.agent, limit=args.limit)
+    except StoreError as exc:
+        _print_error(str(exc))
+        return 1
+    if args.json:
+        _json_out(hits)
+        return 0
+    if not hits:
+        print("no matches")
+        return 0
+    for hit in hits:
+        line = (
+            f"{hit['agent']:12s} {hit['session_id'][:20]:20s} "
+            f"#{hit['message']:4d}  {hit['snippet']}"
+        )
+        print(line)
+    return 0
+
+
+def cmd_diff(args: argparse.Namespace) -> int:
+    old_path, new_path = Path(args.old), Path(args.new)
+    if not old_path.is_file() or not new_path.is_file():
+        _print_error("both files must exist")
+        return 1
+    result = tools.diff_briefs(
+        old_path.read_text(encoding="utf-8"), new_path.read_text(encoding="utf-8")
+    )
+    if args.json:
+        _json_out(result)
+        return 0
+    header = f"{result['old']['agent']} → {result['new']['agent']}"
+    if result["goal_changed"]:
+        header += "  (goal changed)"
+    print(header)
+    for section, changes in result["sections"].items():
+        for label, items in (("+", changes["added"]), ("-", changes["removed"])):
+            for item in items:
+                print(f"{label} [{section}] {item}")
+    return 0
+
+
+def cmd_stats(args: argparse.Namespace) -> int:
+    result = tools.stats(stores(), agent=args.agent)
+    if args.json:
+        _json_out(result)
+        return 0
+    for name, counts in sorted(result["per_agent"].items()):
+        print(
+            f"{name:12s} {counts['sessions']:5d} sessions  "
+            f"{counts['messages']:7d} msgs  ~{counts['tokens']:8d} tokens"
+        )
+    totals = result["totals"]
+    print(
+        f"{'total':12s} {totals['sessions']:5d} sessions  "
+        f"{totals['messages']:7d} msgs  ~{totals['tokens']:8d} tokens"
+    )
+    return 0
+
+
+def cmd_doctor(args: argparse.Namespace) -> int:
+    result = tools.doctor(stores())
+    if args.json:
+        _json_out(result)
+        return 0
+    for entry in result["stores"]:
+        status = f"{entry['sessions']} sessions" if entry["found"] else "not found"
+        print(f"{entry['agent']:12s} {status}")
+    judge = result["judge"]
+    judge_status = (
+        "configured" if judge["configured"] else "not configured (SESSIONPORT_JUDGE_API_KEY)"
+    )
+    print(f"{'judge':12s} {judge_status} ({judge['endpoint']}, {judge['model']})")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="sessionport", description="Portable agent sessions: carry context between agent CLIs."
@@ -307,6 +384,28 @@ def build_parser() -> argparse.ArgumentParser:
 
     mcp_p = sub.add_parser("mcp", help="run the MCP stdio server (needs sessionport[mcp])")
     mcp_p.set_defaults(func=cmd_mcp)
+
+    search_p = sub.add_parser("search", help="search every transcript for text")
+    search_p.add_argument("query", help="text to search for (case-insensitive)")
+    search_p.add_argument("--agent", help="only this agent")
+    search_p.add_argument("--limit", type=int, default=50, help="max hits (default 50)")
+    search_p.add_argument("--json", action="store_true", help="machine-readable output")
+    search_p.set_defaults(func=cmd_search)
+
+    diff_p = sub.add_parser("diff", help="compare two briefs section by section")
+    diff_p.add_argument("old", help="old brief file")
+    diff_p.add_argument("new", help="new brief file")
+    diff_p.add_argument("--json", action="store_true", help="machine-readable output")
+    diff_p.set_defaults(func=cmd_diff)
+
+    stats_p = sub.add_parser("stats", help="session/message/token counts per agent")
+    stats_p.add_argument("--agent", help="only this agent")
+    stats_p.add_argument("--json", action="store_true", help="machine-readable output")
+    stats_p.set_defaults(func=cmd_stats)
+
+    doctor_p = sub.add_parser("doctor", help="which stores were found, judge config")
+    doctor_p.add_argument("--json", action="store_true", help="machine-readable output")
+    doctor_p.set_defaults(func=cmd_doctor)
 
     version_p = sub.add_parser("version", help="print version")
     version_p.set_defaults(func=cmd_version)
