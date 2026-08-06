@@ -9,9 +9,9 @@ owners.
 |---|---|---|---|
 | Claude Code | Anthropic | JSONL transcripts under `~/.claude/projects` | github.com/anthropics |
 | Codex | OpenAI | JSONL sessions under `~/.codex/sessions` | github.com/openai |
-| OpenCode | SST | JSON session files | github.com/sst |
+| OpenCode | SST | JSON session files | opencode.ai (product icon) |
 | Gemini CLI | Google | Markdown transcripts | github.com/google-gemini |
-| Hermes | Nous Research | SQLite session databases | github.com/NousResearch |
+| Hermes | Nous Research | SQLite session databases | hermes-agent repo (product icon) |
 | Cursor | Anysphere | JSONL agent sessions under `~/.cursor/agent` | github.com/anysphere |
 | Aider | Aider AI | Markdown history under `~/.aider.chat/history` | github.com/Aider-AI |
 | Windsurf | Codeium | JSONL sessions under `~/.windsurf` | github.com/codeium |
