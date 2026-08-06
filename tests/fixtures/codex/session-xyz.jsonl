@@ -1,0 +1,3 @@
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"Add a health endpoint to the API"}]},"timestamp":"2026-08-01T11:00:00Z"}
+{"type":"response_item","payload":{"type":"message","role":"assistant","content":[{"type":"output_text","text":"Decision: use a lightweight route in app.py. We'll go with GET /health returning {\"status\":\"ok\"}."}]},"timestamp":"2026-08-01T11:01:00Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"Note: the route must not expose internals.\nNext: wire it into the Dockerfile healthcheck."}]},"timestamp":"2026-08-01T11:02:00Z"}

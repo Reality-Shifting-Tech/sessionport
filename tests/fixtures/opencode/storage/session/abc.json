@@ -1,0 +1,7 @@
+{
+  "id": "abc",
+  "parts": [
+    {"type": "text", "text": "I'll refactor the queue. Decision: use the outbox pattern. Files: queue.py, outbox.py."},
+    {"type": "user", "content": [{"type": "text", "text": "Refactor the queue to use an outbox"}]}
+  ]
+}

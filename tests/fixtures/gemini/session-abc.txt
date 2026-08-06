@@ -1,0 +1,8 @@
+## user
+Build a CLI that converts markdown to html. We chose typer for the CLI.
+## model
+Decision: use markdown-it. Files: cli.py, converter.py.
+Remember: never write to stdout from the library.
+Next: add tests.
+## user
+Can we also handle tables?
